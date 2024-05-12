@@ -1,0 +1,29 @@
+/* Style for the backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Style for the enlarged canvas */
+.modal-canvas {
+  background-color: white; /* Set the background color to white */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease; /* Optional: Adds a transition effect */
+}
+
+/* Style for the enlarged canvas when it's in modal view */
+.modal-view {
+  max-width: 80%; /* Adjust as needed */
+  max-height: 80%; /* Adjust as needed */
+  width: auto; /* This will respect the max-width */
+  height: auto; /* This will respect the max-height */
+}
+
