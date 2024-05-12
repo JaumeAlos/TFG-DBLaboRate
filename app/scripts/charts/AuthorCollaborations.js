@@ -27,7 +27,6 @@ class AuthorCollaborations {
       this.yearRangeCloseColleague = yearRangeCloseColleague
       this.yearRangeAcquaintance = yearRangeAcquaintance
 
-
       const initialFilters = {
         'informal': true,
         'data': true,

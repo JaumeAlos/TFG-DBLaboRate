@@ -58,6 +58,14 @@ class Options {
       }
     })
 
+    document.querySelector('#authorshipPositionToggle').addEventListener('change', (event) => {
+      if (event.target.checked) {
+        this.setLastAuthorshipPosition(1)
+      } else {
+        this.setLastAuthorshipPosition(0)
+      }
+    })
+
     chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getNumberOfAuthorsParameter' }, ({ parameter }) => {
       if (parameter && parameter !== '') {
         document.querySelector('#numberOfAuthorsParameterInput').value = parameter
@@ -99,6 +107,14 @@ class Options {
       } else {
         document.querySelector('#acquaintanceYearsInput').value = 5
         this.setAcquaintanceYearParameter(5)
+      }
+    })
+    chrome.runtine.sendMessage({ scope: 'parameterManager', cmd: 'getLastAuthorshipPosition' }, ({ parameter }) => {
+      if (parameter && parameter !== '') {
+        document.querySelector('#authorshipPositionToggle').checked = parameter
+      } else {
+        document.querySelector('#authorshipPositionToggle').checked = false
+        this.setLastAuthorshipPosition(false)
       }
     })
   }
@@ -165,6 +181,16 @@ class Options {
       if (messageLabel) {
         messageLabel.innerHTML = 'Value saved'
       }
+    })
+  }
+
+  setLastAuthorshipPosition (lastAuthorshipPosition) {
+    chrome.runtime.sendMessage({
+      scope: 'parameterManager',
+      cmd: 'setLastAuthorshipPosition',
+      data: {lastAuthorshipPosition: lastAuthorshipPosition}
+    }, ({lastAuthorshipPosition}) => {
+      console.debug('setLastAuthorshipPosition ' + lastAuthorshipPosition)
     })
   }
 

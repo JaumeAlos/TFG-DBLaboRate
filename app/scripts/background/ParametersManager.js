@@ -119,6 +119,28 @@ class ParametersManager {
               sendResponse({ parameter: yearRangeAcquaintance })
             }
           })
+        } else if (request.cmd === 'getLastAuthorshipPosition') {
+          ChromeStorage.getData('parameters.lastAuthorshipPosition', ChromeStorage.sync, (err, parameter) => {
+            if (err) {
+              sendResponse({ err: err })
+            } else {
+              if (parameter && parameter.data) {
+                parameter = JSON.parse(parameter.data)
+                sendResponse({ parameter: parameter || 0 })
+              } else {
+                sendResponse({ parameter: 0 })
+              }
+            }
+          })
+        } else if (request.cmd === 'setLastAuthorshipPosition') {
+          let lastAuthorshipPosition = request.data.lastAuthorshipPosition
+          ChromeStorage.setData('parameters.lastAuthorshipPosition', { data: JSON.stringify(lastAuthorshipPosition) }, ChromeStorage.sync, (err) => {
+            if (err) {
+              sendResponse({ err: err })
+            } else {
+              sendResponse({ parameter: lastAuthorshipPosition })
+            }
+          })
         }
         return true
       }

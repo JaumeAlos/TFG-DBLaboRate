@@ -8,14 +8,20 @@ class AuthorPositionChart {
     this.publications = null
     this.specificAuthor = null
     this.configuration = null
+    this.lastAuthorshipPosition = false
     this.initEventListeners()
   }
 
-  async init (xmlDoc) {
+  async init (xmlDoc, lastAuthorshipPosition) {
     try {
       const result = xmlDoc
       this.publications = result.querySelectorAll('dblpperson > r')
       this.specificAuthor = result.querySelector('dblpperson > person > author').textContent
+      if (lastAuthorshipPosition === 1) {
+        this.lastAuthorshipPosition = true
+      } else {
+        this.lastAuthorshipPosition = false
+      }
       const initialFilters = {
         'informal': true,
         'data': true,
@@ -35,7 +41,8 @@ class AuthorPositionChart {
     const authorPositionCounts = {
       firstAuthor: {},
       secondAuthor: {},
-      moreThanThirdAuthor: {}
+      moreThanThirdAuthor: {},
+      lastAuthor: {}
     }
 
     Array.from(publications).forEach(publication => {
@@ -78,6 +85,19 @@ class AuthorPositionChart {
             authorPositionCounts.secondAuthor[year] = (authorPositionCounts.secondAuthor[year] || 0) + 1
           } else if (authorPosition > 2) {
             authorPositionCounts.moreThanThirdAuthor[year] = (authorPositionCounts.moreThanThirdAuthor[year] || 0) + 1
+          }
+          if (this.lastAuthorshipPosition && authorPosition === authors.length) {
+            if (!authorPositionCounts.lastAuthor[year]) {
+              authorPositionCounts.lastAuthor[year] = 0
+            }
+            authorPositionCounts.lastAuthor[year]++
+
+            // Resta uno de secondAuthor o moreThanThirdAuthor si el último autor es el segundo o tercer autor
+            if (authorPosition === 2 && authorPositionCounts.secondAuthor[year] > 0) {
+              authorPositionCounts.secondAuthor[year]--
+            } else if (authorPosition > 2 && authorPositionCounts.moreThanThirdAuthor[year] > 0) {
+              authorPositionCounts.moreThanThirdAuthor[year]--
+            }
           }
         }
       }
@@ -176,6 +196,15 @@ class AuthorPositionChart {
         stack: 'stacked' // This indicates that the bar should be stacked
       }
     ]
+
+    if (this.lastAuthorshipPosition) {
+      datasets.push({
+        label: 'Last Author',
+        data: Object.values(authorPositionCounts.lastAuthor),
+        backgroundColor: 'rgb(52,170,73)',
+        stack: 'stacked'
+      })
+    }
 
     this.configuration = {
       type: 'bar',

@@ -62,8 +62,19 @@ const loadPage = function () {
                 }
                 window.dblpExtension.authorCount = new AuthorCount()
                 window.dblpExtension.authorCount.init(xmlDoc, numberOfAuthorsParameter)
-                window.dblpExtension.authorPositionChart = new AuthorPositionChart()
-                window.dblpExtension.authorPositionChart.init(xmlDoc)
+                chrome.runtime.sendMessage({
+                  scope: 'parameterManager',
+                  cmd: 'getLastAuthorshipPosition'
+                }, ({ parameter }) => {
+                  let lastAuthorshipPosition
+                  if (parameter && parameter !== '') {
+                    lastAuthorshipPosition = parameter
+                  } else {
+                    lastAuthorshipPosition = false
+                  }
+                  window.dblpExtension.authorPositionChart = new AuthorPositionChart()
+                  window.dblpExtension.authorPositionChart.init(xmlDoc, lastAuthorshipPosition)
+                })
               })
             })
           })
