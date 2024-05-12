@@ -26,6 +26,10 @@ class AuthorCollaborations {
       this.closeColleagueParameter = closeColleagueParameter
       this.yearRangeCloseColleague = yearRangeCloseColleague
       this.yearRangeAcquaintance = yearRangeAcquaintance
+      console.log('Close colleague parameter:', this.closeColleagueParameter)
+      console.log('Close colleague range parameter:', this.yearRangeCloseColleague)
+      console.log('Acquaintance parameter:', this.acquaintanceParameter)
+      console.log('Acquaintance range parameter:', this.yearRangeAcquaintance)
 
       const initialFilters = {
         'informal': true,
@@ -100,13 +104,13 @@ class AuthorCollaborations {
     // Define helper functions for categorization
     const isCloseColleague = (coAuthor, year) => {
       const years = Object.keys(publicationsByCoAuthors[coAuthor]).map(Number)
-      return years.filter(y => y >= year - this.yearRangeCloseColleague + 1 && y <= year).length >= this.closeColleagueParameter
+      return years.filter(y => y >= year - this.yearRangeCloseColleague && y <= year).length >= this.closeColleagueParameter
     }
 
     const isAcquaintance = (coAuthor, year) => {
       const years = Object.keys(publicationsByCoAuthors[coAuthor]).map(Number)
       let count = 0
-      for (let y = year - this.acquaintanceParameter; y <= year; y++) {
+      for (let y = year - this.yearRangeAcquaintance; y <= year; y++) {
         if (years.includes(y)) {
           count++
           if (count >= (this.acquaintanceParameter - 1)) return true

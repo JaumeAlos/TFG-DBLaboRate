@@ -38,9 +38,9 @@ class ParametersManager {
             } else {
               if (parameter && parameter.data) {
                 parameter = JSON.parse(parameter.data)
-                sendResponse({ parameter: parameter || 5 })
+                sendResponse({ parameter: parameter || 3 })
               } else {
-                sendResponse({ parameter: 5 })
+                sendResponse({ parameter: 3 })
               }
             }
           })
@@ -60,9 +60,9 @@ class ParametersManager {
             } else {
               if (parameter && parameter.data) {
                 parameter = JSON.parse(parameter.data)
-                sendResponse({ parameter: parameter || 3 })
+                sendResponse({ parameter: parameter || 4 })
               } else {
-                sendResponse({ parameter: 3 })
+                sendResponse({ parameter: 4 })
               }
             }
           })
@@ -82,9 +82,9 @@ class ParametersManager {
             } else {
               if (parameter && parameter.data) {
                 parameter = JSON.parse(parameter.data)
-                sendResponse({ parameter: parameter || 4 })
+                sendResponse({ parameter: parameter || 3 })
               } else {
-                sendResponse({ parameter: 4 })
+                sendResponse({ parameter: 3 })
               }
             }
           })
@@ -104,9 +104,9 @@ class ParametersManager {
             } else {
               if (parameter && parameter.data) {
                 parameter = JSON.parse(parameter.data)
-                sendResponse({ parameter: parameter || 3 })
+                sendResponse({ parameter: parameter || 5 })
               } else {
-                sendResponse({ parameter: 3 })
+                sendResponse({ parameter: 5 })
               }
             }
           })

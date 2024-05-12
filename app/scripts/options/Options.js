@@ -13,8 +13,9 @@ class Options {
     // Query for the minimum years of close colleague
     document.querySelector('#closeColleagueParameterButton').addEventListener('click', () => {
       let currentValue = document.querySelector('#closeColleagueParameterInput').value
+      let currentValueRangeYears = document.querySelector('#closeColleagueYearsInput').value
       let messageLabel = document.querySelector('#closeColleagueParameterMessage')
-      if (this.checkCloseColleagueParameter(currentValue)) {
+      if (this.checkCloseColleagueParameter(currentValue, currentValueRangeYears)) {
         this.setCloseColleagueParameter(currentValue, messageLabel)
       } else {
         messageLabel.innerHTML = 'Invalid parameter'
@@ -24,8 +25,9 @@ class Options {
     // Query for the range years of close colleague
     document.querySelector('#closeColleagueYearsButton').addEventListener('click', () => {
       let currentValue = document.querySelector('#closeColleagueYearsInput').value
+      let closeColleagueParameter = document.querySelector('#closeColleagueParameterInput').value
       let messageLabel = document.querySelector('#closeColleagueYearsMessage')
-      if (this.checkCloseColleagueParameter(currentValue)) {
+      if (this.checkCloseColleagueYearParameter(currentValue, closeColleagueParameter)) {
         this.setCloseColleagueYearParameter(currentValue, messageLabel)
       } else {
         messageLabel.innerHTML = 'Invalid parameter'
@@ -35,8 +37,9 @@ class Options {
     // Query for the minimum years of acquaintance
     document.querySelector('#acquaintanceParameterButton').addEventListener('click', () => {
       let currentValue = document.querySelector('#acquaintanceParameterInput').value
+      let acquaintanceRangeYears = document.querySelector('#acquaintanceYearsInput').value
       let messageLabel = document.querySelector('#acquaintanceParameterMessage')
-      if (this.checkAcquaintanceParameter(currentValue)) {
+      if (this.checkAcquaintanceParameter(currentValue, acquaintanceRangeYears)) {
         this.setAcquaintanceParameter(currentValue, messageLabel)
       } else {
         messageLabel.innerHTML = 'Invalid parameter'
@@ -46,8 +49,9 @@ class Options {
     // Query for the range years of acquaintance
     document.querySelector('#acquaintanceYearsButton').addEventListener('click', () => {
       let currentValue = document.querySelector('#acquaintanceYearsInput').value
+      let acquaintanceParameter = document.querySelector('#acquaintanceParameterInput').value
       let messageLabel = document.querySelector('#acquaintanceYearsMessage')
-      if (this.checkAcquaintanceParameter(currentValue)) {
+      if (this.checkAcquaintanceYearParameter(currentValue, acquaintanceParameter)) {
         this.setAcquaintanceYearParameter(currentValue, messageLabel)
       } else {
         messageLabel.innerHTML = 'Invalid parameter'
@@ -67,8 +71,8 @@ class Options {
       if (parameter && parameter !== '') {
         document.querySelector('#closeColleagueParameterInput').value = parameter
       } else {
-        document.querySelector('#closeColleagueParameterInput').value = 4
-        this.setCloseColleagueParameter(4)
+        document.querySelector('#closeColleagueParameterInput').value = 3
+        this.setCloseColleagueParameter(3)
       }
     })
 
@@ -76,8 +80,8 @@ class Options {
       if (parameter && parameter !== '') {
         document.querySelector('#closeColleagueYearsInput').value = parameter
       } else {
-        document.querySelector('#closeColleagueYearsInput').value = 3
-        this.setCloseColleagueYearParameter(3)
+        document.querySelector('#closeColleagueYearsInput').value = 4
+        this.setCloseColleagueYearParameter(4)
       }
     })
 
@@ -85,16 +89,16 @@ class Options {
       if (parameter && parameter !== '') {
         document.querySelector('#acquaintanceParameterInput').value = parameter
       } else {
-        document.querySelector('#acquaintanceParameterInput').value = 5
-        this.setAcquaintanceParameter(5)
+        document.querySelector('#acquaintanceParameterInput').value = 3
+        this.setAcquaintanceParameter(3)
       }
     })
     chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getAcquaintanceYearParameter' }, ({ parameter }) => {
       if (parameter && parameter !== '') {
         document.querySelector('#acquaintanceYearsInput').value = parameter
       } else {
-        document.querySelector('#acquaintanceYearsInput').value = 3
-        this.setAcquaintanceYearParameter(3)
+        document.querySelector('#acquaintanceYearsInput').value = 5
+        this.setAcquaintanceYearParameter(5)
       }
     })
   }
@@ -172,16 +176,31 @@ class Options {
     }
   }
 
-  checkCloseColleagueParameter (parameter) {
-    if (parameter <= 10) {
+  checkCloseColleagueParameter (parameter, yearRangeCloseColleague) {
+    if (parameter <= 10 && yearRangeCloseColleague >= parameter) {
       return true
     } else {
       return false
     }
   }
 
-  checkAcquaintanceParameter (parameter) {
-    if (parameter <= 10) {
+  checkCloseColleagueYearParameter (parameter, closeColleagueParameter) {
+    if (parameter <= 10 && closeColleagueParameter <= parameter) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  checkAcquaintanceParameter (parameter, acquaintanceRangeYears) {
+    if (parameter <= 10 && acquaintanceRangeYears >= parameter) {
+      return true
+    } else {
+      return false
+    }
+  }
+  checkAcquaintanceYearParameter (parameter, acquaintancParameter) {
+    if (parameter <= 10 && acquaintancParameter <= parameter) {
       return true
     } else {
       return false
