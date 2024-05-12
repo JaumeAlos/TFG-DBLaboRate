@@ -26,10 +26,7 @@ class AuthorCollaborations {
       this.closeColleagueParameter = closeColleagueParameter
       this.yearRangeCloseColleague = yearRangeCloseColleague
       this.yearRangeAcquaintance = yearRangeAcquaintance
-      console.log('Close colleague parameter:', this.closeColleagueParameter)
-      console.log('Close colleague range parameter:', this.yearRangeCloseColleague)
-      console.log('Acquaintance parameter:', this.acquaintanceParameter)
-      console.log('Acquaintance range parameter:', this.yearRangeAcquaintance)
+
 
       const initialFilters = {
         'informal': true,
