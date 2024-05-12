@@ -17,7 +17,7 @@ class AuthorCollaborations {
     this.initEventListeners()
   }
 
-  async init (xmlDoc, closeColleagueParameter, acquaintanceParameter, yearRangeCloseColleague, yearRangeAcquaintance) {
+  async init (xmlDoc, closeColleagueParameter, yearRangeCloseColleague, acquaintanceParameter, yearRangeAcquaintance) {
     try {
       const result = xmlDoc
       this.publications = result.querySelectorAll('dblpperson > r')

@@ -30,26 +30,42 @@ const loadPage = function () {
         } else {
           closeColleagueParameter = 3
         }
-        chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getAcquaintanceParameter' }, ({ parameter }) => {
-          let acquaintanceParameter
+        chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getCloseColleagueYearParameter' }, ({ parameter }) => {
+          let closeColleagueYearParameter
           if (parameter && parameter !== '') {
-            acquaintanceParameter = parameter
+            closeColleagueYearParameter = parameter
           } else {
-            acquaintanceParameter = 3
+            closeColleagueYearParameter = 3
           }
-          window.dblpExtension.authorCollaborations = new AuthorCollaborations()
-          window.dblpExtension.authorCollaborations.init(xmlDoc, closeColleagueParameter, acquaintanceParameter)
-          chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getNumberOfAuthorsParameter' }, ({ parameter }) => {
-            let numberOfAuthorsParameter
+          chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getAcquaintanceParameter' }, ({ parameter }) => {
+            let acquaintanceParameter
             if (parameter && parameter !== '') {
-              numberOfAuthorsParameter = parameter
+              acquaintanceParameter = parameter
             } else {
-              numberOfAuthorsParameter = 3
+              acquaintanceParameter = 3
             }
-            window.dblpExtension.authorCount = new AuthorCount()
-            window.dblpExtension.authorCount.init(xmlDoc, numberOfAuthorsParameter)
-            window.dblpExtension.authorPositionChart = new AuthorPositionChart()
-            window.dblpExtension.authorPositionChart.init(xmlDoc)
+            chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getAcquaintanceYearParameter' }, ({ parameter }) => {
+              let acquaintanceYearParameter
+              if (parameter && parameter !== '') {
+                acquaintanceYearParameter = parameter
+              } else {
+                acquaintanceYearParameter = 3
+              }
+              window.dblpExtension.authorCollaborations = new AuthorCollaborations()
+              window.dblpExtension.authorCollaborations.init(xmlDoc, closeColleagueParameter, closeColleagueYearParameter, acquaintanceParameter, acquaintanceYearParameter)
+              chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getNumberOfAuthorsParameter' }, ({ parameter }) => {
+                let numberOfAuthorsParameter
+                if (parameter && parameter !== '') {
+                  numberOfAuthorsParameter = parameter
+                } else {
+                  numberOfAuthorsParameter = 3
+                }
+                window.dblpExtension.authorCount = new AuthorCount()
+                window.dblpExtension.authorCount.init(xmlDoc, numberOfAuthorsParameter)
+                window.dblpExtension.authorPositionChart = new AuthorPositionChart()
+                window.dblpExtension.authorPositionChart.init(xmlDoc)
+              })
+            })
           })
         })
       })

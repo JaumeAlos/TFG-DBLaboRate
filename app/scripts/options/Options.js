@@ -72,11 +72,11 @@ class Options {
       }
     })
 
-    chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getCloseColleagueParameter' }, ({ parameter }) => {
+    chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getCloseColleagueYearParameter' }, ({ parameter }) => {
       if (parameter && parameter !== '') {
-        document.querySelector('#closeColleagueParameterInput').value = parameter
+        document.querySelector('#closeColleagueYearsInput').value = parameter
       } else {
-        document.querySelector('#closeColleagueParameterInput').value = 4
+        document.querySelector('#closeColleagueYearsInput').value = 4
         this.setCloseColleagueYearParameter(4)
       }
     })
@@ -89,11 +89,11 @@ class Options {
         this.setAcquaintanceParameter(3)
       }
     })
-    chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getAcquaintanceParameter' }, ({ parameter }) => {
+    chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getAcquaintanceYearParameter' }, ({ parameter }) => {
       if (parameter && parameter !== '') {
-        document.querySelector('#acquaintanceParameterInput').value = parameter
+        document.querySelector('#acquaintanceYearsInput').value = parameter
       } else {
-        document.querySelector('#acquaintanceParameterInput').value = 5
+        document.querySelector('#acquaintanceYearsInput').value = 5
         this.setAcquaintanceYearParameter(5)
       }
     })
@@ -129,7 +129,7 @@ class Options {
     chrome.runtime.sendMessage({
       scope: 'parameterManager',
       cmd: 'setCloseColleagueYearParameter',
-      data: {CloseColleagueYearParameter: closeColleagueYearParameter}
+      data: {yearRangeCloseColleague: closeColleagueYearParameter}
     }, ({closeColleagueYearParameter}) => {
       console.debug('setCloseColleagueYearParameter ' + closeColleagueYearParameter)
       if (messageLabel) {
@@ -157,7 +157,7 @@ class Options {
       cmd: 'setAcquaintanceYearParameter',
       data: {acquaintanceParameter: acquaintanceYearParameter}
     }, ({acquaintanceYearParameter}) => {
-      console.debug('setAcquaintanceParameter ' + acquaintanceYearParameter)
+      console.debug('setAcquaintanceYearParameter ' + acquaintanceYearParameter)
       if (messageLabel) {
         messageLabel.innerHTML = 'Value saved'
       }

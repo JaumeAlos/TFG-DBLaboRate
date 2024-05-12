@@ -53,6 +53,28 @@ class ParametersManager {
               sendResponse({ parameter: closeColleagueParameter })
             }
           })
+        } else if (request.cmd === 'getCloseColleagueYearParameter') {
+          ChromeStorage.getData('parameters.yearRangeCloseColleague', ChromeStorage.sync, (err, parameter) => {
+            if (err) {
+              sendResponse({ err: err })
+            } else {
+              if (parameter && parameter.data) {
+                parameter = JSON.parse(parameter.data)
+                sendResponse({ parameter: parameter || 3 })
+              } else {
+                sendResponse({ parameter: 3 })
+              }
+            }
+          })
+        } else if (request.cmd === 'setCloseColleagueYearParameter') {
+          let yearRangeCloseColleague = request.data.yearRangeCloseColleague
+          ChromeStorage.setData('parameters.yearRangeCloseColleague', { data: JSON.stringify(yearRangeCloseColleague) }, ChromeStorage.sync, (err) => {
+            if (err) {
+              sendResponse({ err: err })
+            } else {
+              sendResponse({ parameter: yearRangeCloseColleague })
+            }
+          })
         } else if (request.cmd === 'getAcquaintanceParameter') {
           ChromeStorage.getData('parameters.acquaintanceParameter', ChromeStorage.sync, (err, parameter) => {
             if (err) {
@@ -73,6 +95,28 @@ class ParametersManager {
               sendResponse({ err: err })
             } else {
               sendResponse({ parameter: acquaintanceParameter })
+            }
+          })
+        } else if (request.cmd === 'getAcquaintanceYearParameter') {
+          ChromeStorage.getData('parameters.yearRangeAcquaintance', ChromeStorage.sync, (err, parameter) => {
+            if (err) {
+              sendResponse({ err: err })
+            } else {
+              if (parameter && parameter.data) {
+                parameter = JSON.parse(parameter.data)
+                sendResponse({ parameter: parameter || 4 })
+              } else {
+                sendResponse({ parameter: 4 })
+              }
+            }
+          })
+        } else if (request.cmd === 'setAcquaintanceYearParameter') {
+          let yearRangeAcquaintance = request.data.yearRangeAcquaintance
+          ChromeStorage.setData('parameters.yearRangeAcquaintance', { data: JSON.stringify(yearRangeAcquaintance) }, ChromeStorage.sync, (err) => {
+            if (err) {
+              sendResponse({ err: err })
+            } else {
+              sendResponse({ parameter: yearRangeAcquaintance })
             }
           })
         }
