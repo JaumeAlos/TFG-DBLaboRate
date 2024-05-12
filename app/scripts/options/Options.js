@@ -67,8 +67,8 @@ class Options {
       if (parameter && parameter !== '') {
         document.querySelector('#closeColleagueParameterInput').value = parameter
       } else {
-        document.querySelector('#closeColleagueParameterInput').value = 3
-        this.setCloseColleagueParameter(3)
+        document.querySelector('#closeColleagueParameterInput').value = 4
+        this.setCloseColleagueParameter(4)
       }
     })
 
@@ -76,8 +76,8 @@ class Options {
       if (parameter && parameter !== '') {
         document.querySelector('#closeColleagueYearsInput').value = parameter
       } else {
-        document.querySelector('#closeColleagueYearsInput').value = 4
-        this.setCloseColleagueYearParameter(4)
+        document.querySelector('#closeColleagueYearsInput').value = 3
+        this.setCloseColleagueYearParameter(3)
       }
     })
 
@@ -85,16 +85,16 @@ class Options {
       if (parameter && parameter !== '') {
         document.querySelector('#acquaintanceParameterInput').value = parameter
       } else {
-        document.querySelector('#acquaintanceParameterInput').value = 3
-        this.setAcquaintanceParameter(3)
+        document.querySelector('#acquaintanceParameterInput').value = 5
+        this.setAcquaintanceParameter(5)
       }
     })
     chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getAcquaintanceYearParameter' }, ({ parameter }) => {
       if (parameter && parameter !== '') {
         document.querySelector('#acquaintanceYearsInput').value = parameter
       } else {
-        document.querySelector('#acquaintanceYearsInput').value = 5
-        this.setAcquaintanceYearParameter(5)
+        document.querySelector('#acquaintanceYearsInput').value = 3
+        this.setAcquaintanceYearParameter(3)
       }
     })
   }
@@ -155,7 +155,7 @@ class Options {
     chrome.runtime.sendMessage({
       scope: 'parameterManager',
       cmd: 'setAcquaintanceYearParameter',
-      data: {acquaintanceParameter: acquaintanceYearParameter}
+      data: {yearRangeAcquaintance: acquaintanceYearParameter}
     }, ({acquaintanceYearParameter}) => {
       console.debug('setAcquaintanceYearParameter ' + acquaintanceYearParameter)
       if (messageLabel) {
