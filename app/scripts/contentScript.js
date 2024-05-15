@@ -51,8 +51,6 @@ const loadPage = function () {
               } else {
                 acquaintanceYearParameter = 3
               }
-              window.dblpExtension.authorCollaborations = new AuthorCollaborations()
-              window.dblpExtension.authorCollaborations.init(xmlDoc, closeColleagueParameter, closeColleagueYearParameter, acquaintanceParameter, acquaintanceYearParameter)
               chrome.runtime.sendMessage({ scope: 'parameterManager', cmd: 'getNumberOfAuthorsParameter' }, ({ parameter }) => {
                 let numberOfAuthorsParameter
                 if (parameter && parameter !== '') {
@@ -74,6 +72,12 @@ const loadPage = function () {
                   }
                   window.dblpExtension.authorPositionChart = new AuthorPositionChart()
                   window.dblpExtension.authorPositionChart.init(xmlDoc, lastAuthorshipPosition)
+
+                  const authorCountInstance = new AuthorCount()
+                  const authorPositionChartInstance = new AuthorPositionChart()
+
+                  window.dblpExtension.authorCollaborations = new AuthorCollaborations()
+                  window.dblpExtension.authorCollaborations.init(xmlDoc, closeColleagueParameter, closeColleagueYearParameter, acquaintanceParameter, acquaintanceYearParameter, authorCountInstance, authorPositionChartInstance, numberOfAuthorsParameter, lastAuthorshipPosition)
                 })
               })
             })

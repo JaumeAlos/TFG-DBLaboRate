@@ -224,11 +224,6 @@ class AuthorCount {
       previousTitle.remove()
     }
 
-    const previousButton = document.getElementById('export-button-number-authors')
-    if (previousButton) {
-      previousButton.remove()
-    }
-
     const title = document.createElement('p')
     title.id = 'number-authors-title'
     const text = document.createElement('b')
@@ -236,32 +231,6 @@ class AuthorCount {
     title.appendChild(text)
     div.insertBefore(normalCanvas, div.firstChild)
     div.insertBefore(title, normalCanvas)
-
-    let filterNames = {
-      'article': 'Journal articles',
-      'inproceedings': 'Conference Papers',
-      'incollection': 'Books or Collections',
-      'informal': 'Informal',
-      'data': 'Data and Artifacts',
-      'editor': 'Editorship'
-    }
-
-    let activeFilters = []
-
-    for (let filter in this.filters) {
-      if (this.filters[filter]) {
-        activeFilters.push(filterNames[filter])
-      }
-    }
-
-    let activeFiltersString = activeFilters.join(', ')
-
-    const exportButton = document.createElement('button')
-    exportButton.textContent = 'Export to Excel'
-    exportButton.id = 'export-button-number-authors'
-    exportButton.style.margin = '10px'
-    exportButton.addEventListener('click', () => this.exportToExcel(authorCountCategories, activeFiltersString))
-    div.insertBefore(exportButton, normalCanvas.nextSibling)
 
     const normalCtx = normalCanvas.getContext('2d')
     this.myChartAuthor = new Chart(normalCtx, this.configuration)

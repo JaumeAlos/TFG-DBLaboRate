@@ -30,14 +30,14 @@ class AuthorPositionChart {
       } else {
         this.lastAuthorshipPosition = false
       }
-      const yearCounts = this.countPublicationsByAuthorPosition(this.publications || [], this.specificAuthor, this.filters)
+      const yearCounts = this.countPublicationsByAuthorPosition(this.publications || [], this.specificAuthor, this.filters, lastAuthorshipPosition)
       await this.createChart(yearCounts)
     } catch (error) {
       console.error('An error occurred:', error)
     }
   }
 
-  countPublicationsByAuthorPosition (publications, specificAuthor, filters) {
+  countPublicationsByAuthorPosition (publications, specificAuthor, filters, lastAuthorshipPosition) {
     const authorPositionCounts = {
       firstAuthor: {},
       secondAuthor: {},
@@ -86,7 +86,7 @@ class AuthorPositionChart {
           } else if (authorPosition > 2) {
             authorPositionCounts.moreThanThirdAuthor[year] = (authorPositionCounts.moreThanThirdAuthor[year] || 0) + 1
           }
-          if (this.lastAuthorshipPosition && authorPosition === authors.length) {
+          if (lastAuthorshipPosition && authorPosition === authors.length) {
             if (!authorPositionCounts.lastAuthor[year]) {
               authorPositionCounts.lastAuthor[year] = 0
             }
@@ -144,11 +144,11 @@ class AuthorPositionChart {
       }
     })
 
-    const categorizedAuthorPosition = this.countPublicationsByAuthorPosition(this.publications || [], this.specificAuthor, filters)
+    const categorizedAuthorPosition = this.countPublicationsByAuthorPosition(this.publications || [], this.specificAuthor, filters, this.lastAuthorshipPosition)
     await this.createChart(categorizedAuthorPosition)
   }
 
-  prepareDataForExcel (authorPositionCounts, activeFiltersString) {
+  prepareDataForExcel (authorPositionCounts, activeFiltersString, lastAuthorshipPosition) {
     const years = Object.keys({
       ...authorPositionCounts.firstAuthor,
       ...authorPositionCounts.secondAuthor,
@@ -163,7 +163,7 @@ class AuthorPositionChart {
         'More Than Third Author': authorPositionCounts.moreThanThirdAuthor[year] || 0
       }
 
-      if (this.lastAuthorshipPosition) {
+      if (lastAuthorshipPosition) {
         yearData['Last Author'] = authorPositionCounts.lastAuthor[year] || 0
       }
 
@@ -178,7 +178,7 @@ class AuthorPositionChart {
   }
 
   exportToExcel (authorPositionCounts, activeFiltersString) {
-    const data = this.prepareDataForExcel(authorPositionCounts, activeFiltersString)
+    const data = this.prepareDataForExcel(authorPositionCounts, activeFiltersString, this.lastAuthorshipPosition)
     const worksheet = xlsx.utils.json_to_sheet(data)
     const workbook = xlsx.utils.book_new()
     xlsx.utils.book_append_sheet(workbook, worksheet, 'Authorship Position')
@@ -281,11 +281,6 @@ class AuthorPositionChart {
       previousTitle.remove()
     }
 
-    const previousButton = document.getElementById('export-button-authorship')
-    if (previousButton) {
-      previousButton.remove()
-    }
-
     // Append normal canvas to the page
     let title = document.createElement('p')
     title.id = 'authorship-title'
@@ -294,32 +289,6 @@ class AuthorPositionChart {
     title.appendChild(text)
     div.insertBefore(normalCanvas, div.firstChild)
     div.insertBefore(title, normalCanvas)
-
-    let filterNames = {
-      'article': 'Journal articles',
-      'inproceedings': 'Conference Papers',
-      'incollection': 'Books or Collections',
-      'informal': 'Informal',
-      'data': 'Data and Artifacts',
-      'editor': 'Editorship'
-    }
-
-    let activeFilters = []
-
-    for (let filter in this.filters) {
-      if (this.filters[filter]) {
-        activeFilters.push(filterNames[filter])
-      }
-    }
-
-    let activeFiltersString = activeFilters.join(', ')
-
-    const exportButton = document.createElement('button')
-    exportButton.textContent = 'Export to Excel'
-    exportButton.id = 'export-button-authorship'
-    exportButton.style.margin = '10px'
-    exportButton.addEventListener('click', () => this.exportToExcel(authorPositionCounts, activeFiltersString))
-    div.insertBefore(exportButton, normalCanvas.nextSibling)
 
     // Get the context of the normal canvas and create the chart
     const normalCtx = normalCanvas.getContext('2d')
