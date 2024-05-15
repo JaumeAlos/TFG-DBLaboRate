@@ -1,5 +1,5 @@
 import Chart from 'chart.js/auto'
-import XLSX from 'xlsx'
+import * as xlsx from 'xlsx'
 
 class AuthorCollaborations {
   constructor () {
@@ -14,6 +14,14 @@ class AuthorCollaborations {
     this.acquaintanceParameter = 0
     this.yearRangeCloseColleague = 0
     this.yearRangeAcquaintance = 0
+    this.filters = {
+      'informal': true,
+      'data': true,
+      'editor': true,
+      'incollection': true,
+      'inproceedings': true,
+      'article': true
+    }
     this.initEventListeners()
   }
 
@@ -27,15 +35,7 @@ class AuthorCollaborations {
       this.yearRangeCloseColleague = yearRangeCloseColleague
       this.yearRangeAcquaintance = yearRangeAcquaintance
 
-      const initialFilters = {
-        'informal': true,
-        'data': true,
-        'editor': true,
-        'incollection': true,
-        'inproceedings': true,
-        'article': true
-      }
-      const categorizedCoAuthors = this.countCoAuthors(this.publications || [], this.specificAuthor, initialFilters)
+      const categorizedCoAuthors = this.countCoAuthors(this.publications || [], this.specificAuthor, this.filters)
       await this.createAcquaintanceChart(categorizedCoAuthors)
       await this.createCollaboratorChart(categorizedCoAuthors)
     } catch (error) {
@@ -46,6 +46,7 @@ class AuthorCollaborations {
   countCoAuthors (publications, specificAuthor, filters) {
     const publicationsByCoAuthors = {}
     const coAuthorsByYear = {}
+    this.filters = filters
 
     Array.from(publications).forEach(publication => {
       let pubType
@@ -181,36 +182,42 @@ class AuthorCollaborations {
     await this.createCollaboratorChart(categorizedCoAuthors)
   }
 
-  async prepareDataForExcelCollaborators (categorizedCoAuthors) {
-    return Object.keys(categorizedCoAuthors).map(year => ({
+  prepareDataForExcelCollaborators (categorizedCoAuthors, activeFiltersString) {
+    let data = Object.keys(categorizedCoAuthors).map(year => ({
       Year: year,
-      CloseColleagues: categorizedCoAuthors[year].closeColleague,
       Collaborators: categorizedCoAuthors[year].collaborator
     }))
+
+    data.unshift({ Year: 'Active Filters:', Collaborators: activeFiltersString })
+
+    return data
   }
 
-  async prepareDataForExcelAcquaintances (categorizedCoAuthors) {
-    return Object.keys(categorizedCoAuthors).map(year => ({
+  prepareDataForExcelAcquaintances (categorizedCoAuthors, activeFiltersString) {
+    let data = Object.keys(categorizedCoAuthors).map(year => ({
       Year: year,
       CloseColleagues: categorizedCoAuthors[year].closeColleague,
       Acquaintances: categorizedCoAuthors[year].acquaintance
     }))
+    data.unshift({ Year: 'Active Filters:', CloseColleagues: activeFiltersString })
+
+    return data
   }
 
-  async exportToExcelCollaborators (categorizedCoAuthors) {
-    const data = this.prepareDataForExcelCollaborators(categorizedCoAuthors)
-    const worksheet = XLSX.utils.json_to_sheet(data)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'CoAuthor Categories')
-    XLSX.writeFile(workbook, 'Close_Colleagues_&_Collaborators.xlsx')
+  async exportToExcelCollaborators (categorizedCoAuthors, filterName) {
+    const data = this.prepareDataForExcelCollaborators(categorizedCoAuthors, filterName)
+    const worksheet = xlsx.utils.json_to_sheet(data)
+    const workbook = xlsx.utils.book_new()
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'CoAuthor Categories')
+    xlsx.writeFile(workbook, 'Collaborators.xlsx')
   }
 
-  async exportToExcelAcquaintances (categorizedCoAuthors) {
-    const data = this.prepareDataForExcelAcquaintances(categorizedCoAuthors)
-    const worksheet = XLSX.utils.json_to_sheet(data)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'CoAuthor Categories')
-    XLSX.writeFile(workbook, 'Close_Colleagues_&_Acquaintances.xlsx')
+  async exportToExcelAcquaintances (categorizedCoAuthors, filterName) {
+    const data = this.prepareDataForExcelAcquaintances(categorizedCoAuthors, filterName)
+    const worksheet = xlsx.utils.json_to_sheet(data)
+    const workbook = xlsx.utils.book_new()
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'CoAuthor Categories')
+    xlsx.writeFile(workbook, 'Close_Colleagues_&_Acquaintances.xlsx')
   }
 
   // Function to create and save the chart
@@ -303,11 +310,30 @@ class AuthorCollaborations {
     div.insertBefore(normalCanvas, div.firstChild)
     div.insertBefore(title, normalCanvas)
 
+    let filterNames = {
+      'article': 'Journal articles',
+      'inproceedings': 'Conference Papers',
+      'incollection': 'Books or Collections',
+      'informal': 'Informal',
+      'data': 'Data and Artifacts',
+      'editor': 'Editorship'
+    }
+
+    let activeFilters = []
+
+    for (let filter in this.filters) {
+      if (this.filters[filter]) {
+        activeFilters.push(filterNames[filter])
+      }
+    }
+
+    let activeFiltersString = activeFilters.join(', ')
+
     const exportButton = document.createElement('button')
     exportButton.textContent = 'Export to Excel'
     exportButton.id = 'export-button-acquaintance'
     exportButton.style.margin = '10px'
-    exportButton.addEventListener('click', () => this.exportToExcelAcquaintances(categorizedCoAuthors))
+    exportButton.addEventListener('click', () => this.exportToExcelAcquaintances(categorizedCoAuthors, activeFiltersString))
     div.insertBefore(exportButton, normalCanvas.nextSibling)
 
     const normalCtx = normalCanvas.getContext('2d')
@@ -395,11 +421,30 @@ class AuthorCollaborations {
     div.insertBefore(normalCanvas, div.firstChild)
     div.insertBefore(title, normalCanvas)
 
+    let filterNames = {
+      'article': 'Journal articles',
+      'inproceedings': 'Conference Papers',
+      'incollection': 'Books or Collections',
+      'informal': 'Informal',
+      'data': 'Data and Artifacts',
+      'editor': 'Editorship'
+    }
+
+    let activeFilters = []
+
+    for (let filter in this.filters) {
+      if (this.filters[filter]) {
+        activeFilters.push(filterNames[filter])
+      }
+    }
+
+    let activeFiltersString = activeFilters.join(', ')
+
     const exportButton = document.createElement('button')
     exportButton.textContent = 'Export to Excel'
     exportButton.id = 'export-button-collaborators'
     exportButton.style.margin = '10px'
-    exportButton.addEventListener('click', () => this.exportToExcelCollaborators(categorizedCoAuthors))
+    exportButton.addEventListener('click', () => this.exportToExcelCollaborators(categorizedCoAuthors, activeFiltersString))
     div.insertBefore(exportButton, normalCanvas.nextSibling)
 
     const normalCtx = normalCanvas.getContext('2d')

@@ -1,13 +1,21 @@
 import Chart from 'chart.js/auto'
-import XLSX from 'xlsx'
+import * as xlsx from 'xlsx'
 
 class AuthorCount {
   constructor () {
-    this.myChart = null
-    this.myLargeChart = null
+    this.myChartAuthor = null
+    this.myLargeChartAuthor = null
     this.configuration = null
     this.publications = null
     this.numberOfAuthorsParameter = 3
+    this.filters = {
+      'informal': true,
+      'data': true,
+      'editor': true,
+      'incollection': true,
+      'inproceedings': true,
+      'article': true
+    }
     this.initEventListeners()
   }
 
@@ -16,15 +24,8 @@ class AuthorCount {
       const result = xmlDoc
       this.publications = result.querySelectorAll('dblpperson > r')
       this.numberOfAuthorsParameter = numberOfAuthorsParameter
-      const initialFilters = {
-        'informal': true,
-        'data': true,
-        'editor': true,
-        'incollection': true,
-        'inproceedings': true,
-        'article': true
-      }
-      const yearCounts = this.countPublicationsByAuthorCount(this.publications, numberOfAuthorsParameter, initialFilters)
+
+      const yearCounts = this.countPublicationsByAuthorCount(this.publications, numberOfAuthorsParameter, this.filters)
       await this.createChart(yearCounts, numberOfAuthorsParameter)
     } catch (error) {
       console.error('An error occurred:', error)
@@ -114,25 +115,33 @@ class AuthorCount {
     this.createChart(categorizedAuthorCount, this.numberOfAuthorsParameter)
   }
 
-  prepareDataForExcel (authorCountCategories) {
+  prepareDataForExcel (authorCountCategories, activeFiltersString) {
     const years = Object.keys({
       ...authorCountCategories.threeOrLessAuthors,
       ...authorCountCategories.moreThanThreeAuthors
     }).sort()
 
-    return years.map(year => ({
-      Year: year,
-      '3 or Fewer Authors': authorCountCategories.threeOrLessAuthors[year] || 0,
-      'More Than 3 Authors': authorCountCategories.moreThanThreeAuthors[year] || 0
-    }))
+    let data = years.map(year => {
+      return {
+        Year: year,
+        '3 or Fewer Authors': authorCountCategories.threeOrLessAuthors[year] || 0,
+        'More Than 3 Authors': authorCountCategories.moreThanThreeAuthors[year] || 0
+      }
+    })
+
+    let activeFiltersRow = { Year: 'Active Filters:', '3 or Fewer Authors': activeFiltersString }
+
+    data.splice(0, 0, activeFiltersRow)
+
+    return data
   }
 
-  exportToExcel (authorCountCategories) {
-    const data = this.prepareDataForExcel(authorCountCategories)
-    const worksheet = XLSX.utils.json_to_sheet(data)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Number of Authors')
-    XLSX.writeFile(workbook, 'number_of_Authors.xlsx')
+  exportToExcel (authorCountCategories, activeFiltersString) {
+    const data = this.prepareDataForExcel(authorCountCategories, activeFiltersString)
+    const worksheet = xlsx.utils.json_to_sheet(data)
+    const workbook = xlsx.utils.book_new()
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Number of Authors')
+    xlsx.writeFile(workbook, 'number_of_Authors.xlsx')
   }
   async createChart (authorCountCategories, numberOfAuthorsParameter) {
     const sortedYears = Object.keys({
@@ -183,8 +192,8 @@ class AuthorCount {
       }
     }
 
-    if (this.myChart) {
-      this.myChart.destroy()
+    if (this.myChartAuthor) {
+      this.myChartAuthor.destroy()
     }
 
     let normalCanvas = document.getElementById('myChartAuthor')
@@ -228,15 +237,34 @@ class AuthorCount {
     div.insertBefore(normalCanvas, div.firstChild)
     div.insertBefore(title, normalCanvas)
 
+    let filterNames = {
+      'article': 'Journal articles',
+      'inproceedings': 'Conference Papers',
+      'incollection': 'Books or Collections',
+      'informal': 'Informal',
+      'data': 'Data and Artifacts',
+      'editor': 'Editorship'
+    }
+
+    let activeFilters = []
+
+    for (let filter in this.filters) {
+      if (this.filters[filter]) {
+        activeFilters.push(filterNames[filter])
+      }
+    }
+
+    let activeFiltersString = activeFilters.join(', ')
+
     const exportButton = document.createElement('button')
     exportButton.textContent = 'Export to Excel'
     exportButton.id = 'export-button-number-authors'
     exportButton.style.margin = '10px'
-    exportButton.addEventListener('click', () => this.exportToExcel(authorCountCategories))
+    exportButton.addEventListener('click', () => this.exportToExcel(authorCountCategories, activeFiltersString))
     div.insertBefore(exportButton, normalCanvas.nextSibling)
 
     const normalCtx = normalCanvas.getContext('2d')
-    this.myChart = new Chart(normalCtx, this.configuration)
+    this.myChartAuthor = new Chart(normalCtx, this.configuration)
   }
 
   toggleChartModal (normalCanvas, largeCanvas, authorCountCategories, enlarge) {
@@ -253,8 +281,8 @@ class AuthorCount {
       largeCanvas.classList.add('modal-canvas', 'modal-view')
 
       // Always remove the old chart and create a new one for consistency
-      if (this.myLargeChart) {
-        this.myLargeChart.destroy() // Destroy the old chart instance
+      if (this.myLargeChartAuthor) {
+        this.myLargeChartAuthor.destroy() // Destroy the old chart instance
       }
       // Get the context of the large canvas
       const largeCtx = largeCanvas.getContext('2d')
@@ -265,7 +293,7 @@ class AuthorCount {
       largeConfiguration.options.scales.x.ticks.autoSkip = false
       largeConfiguration.options.scales.x.ticks.maxRotation = 90
 
-      this.myLargeChart = new Chart(largeCtx, largeConfiguration) // Create a new chart instance
+      this.myLargeChartAuthor = new Chart(largeCtx, largeConfiguration) // Create a new chart instance
 
       backdrop.appendChild(largeCanvas)
       backdrop.style.display = 'flex'
@@ -284,7 +312,7 @@ class AuthorCount {
       normalCanvas.style.display = 'block' // Show the normal canvas
 
       // If needed, update the normal chart instance
-      this.myChart.update()
+      this.myChartAuthor.update()
     }
   }
 }

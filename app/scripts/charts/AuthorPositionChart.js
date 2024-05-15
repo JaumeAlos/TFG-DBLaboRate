@@ -1,5 +1,5 @@
 import Chart from 'chart.js/auto'
-import XLSX from 'xlsx'
+import * as xlsx from 'xlsx'
 
 class AuthorPositionChart {
   constructor () {
@@ -9,6 +9,14 @@ class AuthorPositionChart {
     this.specificAuthor = null
     this.configuration = null
     this.lastAuthorshipPosition = false
+    this.filters = {
+      'informal': true,
+      'data': true,
+      'editor': true,
+      'incollection': true,
+      'inproceedings': true,
+      'article': true
+    }
     this.initEventListeners()
   }
 
@@ -22,15 +30,7 @@ class AuthorPositionChart {
       } else {
         this.lastAuthorshipPosition = false
       }
-      const initialFilters = {
-        'informal': true,
-        'data': true,
-        'editor': true,
-        'incollection': true,
-        'inproceedings': true,
-        'article': true
-      }
-      const yearCounts = this.countPublicationsByAuthorPosition(this.publications || [], this.specificAuthor, initialFilters)
+      const yearCounts = this.countPublicationsByAuthorPosition(this.publications || [], this.specificAuthor, this.filters)
       await this.createChart(yearCounts)
     } catch (error) {
       console.error('An error occurred:', error)
@@ -147,26 +147,42 @@ class AuthorPositionChart {
     const categorizedAuthorPosition = this.countPublicationsByAuthorPosition(this.publications || [], this.specificAuthor, filters)
     await this.createChart(categorizedAuthorPosition)
   }
-  prepareDataForExcel (authorPositionCounts) {
+
+  prepareDataForExcel (authorPositionCounts, activeFiltersString) {
     const years = Object.keys({
       ...authorPositionCounts.firstAuthor,
       ...authorPositionCounts.secondAuthor,
       ...authorPositionCounts.moreThanThirdAuthor
     }).sort()
 
-    return years.map(year => ({
-      Year: year,
-      'First Author': authorPositionCounts.firstAuthor[year] || 0,
-      'Second Author': authorPositionCounts.secondAuthor[year] || 0,
-      'More Than Third Author': authorPositionCounts.moreThanThirdAuthor[year] || 0
-    }))
+    let data = years.map(year => {
+      let yearData = {
+        Year: year,
+        'First Author': authorPositionCounts.firstAuthor[year] || 0,
+        'Second Author': authorPositionCounts.secondAuthor[year] || 0,
+        'More Than Third Author': authorPositionCounts.moreThanThirdAuthor[year] || 0
+      }
+
+      if (this.lastAuthorshipPosition) {
+        yearData['Last Author'] = authorPositionCounts.lastAuthor[year] || 0
+      }
+
+      return yearData
+    })
+
+    let activeFiltersRow = { Year: 'Active Filters:', 'First Author': activeFiltersString }
+
+    data.splice(0, 0, activeFiltersRow)
+
+    return data
   }
-  exportToExcel (authorPositionCounts) {
-    const data = this.prepareDataForExcel(authorPositionCounts)
-    const worksheet = XLSX.utils.json_to_sheet(data)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Authorship Position')
-    XLSX.writeFile(workbook, 'authorship_position.xlsx')
+
+  exportToExcel (authorPositionCounts, activeFiltersString) {
+    const data = this.prepareDataForExcel(authorPositionCounts, activeFiltersString)
+    const worksheet = xlsx.utils.json_to_sheet(data)
+    const workbook = xlsx.utils.book_new()
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Authorship Position')
+    xlsx.writeFile(workbook, 'authorship_position.xlsx')
   }
 
   // Function to create and save the chart
@@ -279,11 +295,30 @@ class AuthorPositionChart {
     div.insertBefore(normalCanvas, div.firstChild)
     div.insertBefore(title, normalCanvas)
 
+    let filterNames = {
+      'article': 'Journal articles',
+      'inproceedings': 'Conference Papers',
+      'incollection': 'Books or Collections',
+      'informal': 'Informal',
+      'data': 'Data and Artifacts',
+      'editor': 'Editorship'
+    }
+
+    let activeFilters = []
+
+    for (let filter in this.filters) {
+      if (this.filters[filter]) {
+        activeFilters.push(filterNames[filter])
+      }
+    }
+
+    let activeFiltersString = activeFilters.join(', ')
+
     const exportButton = document.createElement('button')
     exportButton.textContent = 'Export to Excel'
     exportButton.id = 'export-button-authorship'
     exportButton.style.margin = '10px'
-    exportButton.addEventListener('click', () => this.exportToExcel(authorPositionCounts).bind(this))
+    exportButton.addEventListener('click', () => this.exportToExcel(authorPositionCounts, activeFiltersString))
     div.insertBefore(exportButton, normalCanvas.nextSibling)
 
     // Get the context of the normal canvas and create the chart

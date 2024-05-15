@@ -43,6 +43,9 @@
       ],
       "matches": [
         "*://*/*"
+      ],
+      "web_accessible_resources": [
+        "scripts/xlsx.full.min.js"
       ]
     }
   ]
