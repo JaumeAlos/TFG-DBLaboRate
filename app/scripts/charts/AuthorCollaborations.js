@@ -214,49 +214,70 @@ class AuthorCollaborations {
     return data
   }
 
-  async exportToExcelCollaborators (categorizedCoAuthors, filterName) {
-    const data = this.prepareDataForExcelCollaborators(categorizedCoAuthors, filterName)
-    const worksheet = xlsx.utils.json_to_sheet(data)
-    const workbook = xlsx.utils.book_new()
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'CoAuthor Categories')
-    xlsx.writeFile(workbook, 'Collaborators.xlsx')
-  }
-
-  async exportToExcelAcquaintances (categorizedCoAuthors, filterName) {
-    const data = this.prepareDataForExcelAcquaintances(categorizedCoAuthors, filterName)
-    const worksheet = xlsx.utils.json_to_sheet(data)
-    const workbook = xlsx.utils.book_new()
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'CoAuthor Categories')
-    xlsx.writeFile(workbook, 'Close_Colleagues_&_Acquaintances.xlsx')
-  }
-
   exportAllToExcel (categorizedCoAuthors, activeFiltersString) {
     const workbook = xlsx.utils.book_new()
 
-    // Datos de la gráfica de colaboradores
     const collaboratorsData = this.prepareDataForExcelCollaborators(categorizedCoAuthors, activeFiltersString)
     const collaboratorsWorksheet = xlsx.utils.json_to_sheet(collaboratorsData)
     xlsx.utils.book_append_sheet(workbook, collaboratorsWorksheet, 'Collaborators')
 
-    // Datos de la gráfica de conocidos
     const acquaintancesData = this.prepareDataForExcelAcquaintances(categorizedCoAuthors, activeFiltersString)
     const acquaintancesWorksheet = xlsx.utils.json_to_sheet(acquaintancesData)
-    xlsx.utils.book_append_sheet(workbook, acquaintancesWorksheet, 'Acquaintances')
+    xlsx.utils.book_append_sheet(workbook, acquaintancesWorksheet, 'Close Colleague & Acquaintances')
 
-    // Datos de AuthorCount
     const authorCountCategories = this.authorCountInstance.countPublicationsByAuthorCount(this.publications, this.numberOfAuthorsParameter, this.filters)
     const authorCountData = this.authorCountInstance.prepareDataForExcel(authorCountCategories, activeFiltersString)
     const authorCountWorksheet = xlsx.utils.json_to_sheet(authorCountData)
     xlsx.utils.book_append_sheet(workbook, authorCountWorksheet, 'Author Count')
 
-    // Datos de AuthorPositionChart
     const authorPositionCounts = this.authorPositionChartInstance.countPublicationsByAuthorPosition(this.publications, this.specificAuthor, this.filters, this.lastAuthorshipPosition)
     const authorPositionChartData = this.authorPositionChartInstance.prepareDataForExcel(authorPositionCounts, activeFiltersString, this.lastAuthorshipPosition)
     const authorPositionChartWorksheet = xlsx.utils.json_to_sheet(authorPositionChartData)
     xlsx.utils.book_append_sheet(workbook, authorPositionChartWorksheet, 'Author Position')
 
-    // Guardar el archivo Excel
     xlsx.writeFile(workbook, 'All_Charts.xlsx')
+  }
+
+  handleFileSelect (event) {
+    const file = event.target.files[0]
+    // eslint-disable-next-line no-undef
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const data = new Uint8Array(e.target.result)
+      const workbook = xlsx.read(data, {type: 'array'})
+
+      // Suponiendo que los datos de cada gráfico están en hojas separadas
+      const sheetNames = workbook.SheetNames
+
+      // Leer los datos de cada hoja y crear los gráficos correspondientes
+      for (const sheetName of sheetNames) {
+        const worksheet = workbook.Sheets[sheetName]
+        const jsonData = xlsx.utils.sheet_to_json(worksheet, {header: 1})
+
+        // Crear los gráficos correspondientes dependiendo del nombre de la hoja
+        switch (sheetName) {
+          case 'Author Count':
+            const authorCountData = jsonData.slice(1) // Ignorar la fila de encabezado
+            await this.authorCountInstance.createChart(authorCountData)
+            break
+          case 'Author Position':
+            const authorPositionData = jsonData.slice(1) // Ignorar la fila de encabezado
+            await this.authorPositionChartInstance.createChart(authorPositionData)
+            break
+          case 'Collaborators':
+            const collaboratorsData = jsonData.slice(1) // Ignorar la fila de encabezado
+            await this.createCollaboratorChart(collaboratorsData)
+            break
+          case 'Close Colleague & Acquaintances':
+            const acquaintancesData = jsonData.slice(1) // Ignorar la fila de encabezado
+            await this.createAcquaintanceChart(acquaintancesData)
+            break
+          default:
+            console.error(`No se reconoce el nombre de la hoja: ${sheetName}`)
+        }
+      }
+    }
+    reader.readAsArrayBuffer(file)
   }
 
   // Function to create and save the chart
@@ -410,6 +431,26 @@ class AuthorCollaborations {
     normalCanvas.addEventListener('click', () => {
       this.toggleChartModal(normalCanvas, largeCanvas, categorizedCoAuthors, true)
     })
+
+    const fileInput = document.createElement('input')
+    fileInput.type = 'file'
+    fileInput.accept = '.xlsx'
+    fileInput.style.display = 'none'
+    fileInput.addEventListener('change', (event) => this.handleFileSelect(event))
+
+    const importButton = document.createElement('button')
+    importButton.textContent = 'Import from Excel'
+    importButton.id = 'import-button'
+    importButton.style.margin = '10px'
+    importButton.addEventListener('click', () => fileInput.click())
+
+    const previousImport = document.getElementById('import-button')
+    if (previousImport) {
+      previousImport.remove()
+    }
+
+    div.appendChild(fileInput)
+    div.prepend(importButton)
 
     const previousTitle = document.getElementById('collaborators-title')
     if (previousTitle) {
