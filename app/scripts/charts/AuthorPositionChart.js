@@ -3,7 +3,7 @@ import * as xlsx from 'xlsx'
 
 class AuthorPositionChart {
   constructor () {
-    this.myChart = null
+    this.myChartAuthorship = null
     this.myLargeChart = null
     this.publications = null
     this.specificAuthor = null
@@ -267,7 +267,9 @@ class AuthorPositionChart {
       largeCanvas.height = 700
     } else {
       const normalCtx = normalCanvas.getContext('2d')
-      this.myChart.destroy()
+      if (this.myChartAuthorship) {
+        this.destroy()
+      }
       normalCtx.clearRect(0, 0, normalCanvas.width, normalCanvas.height)
     }
 
@@ -292,7 +294,7 @@ class AuthorPositionChart {
 
     // Get the context of the normal canvas and create the chart
     const normalCtx = normalCanvas.getContext('2d')
-    this.myChart = new Chart(normalCtx, this.configuration)
+    this.myChartAuthorship = new Chart(normalCtx, this.configuration)
   }
 
   toggleChartModal (normalCanvas, largeCanvas, authorPositionCounts, enlarge) {
@@ -340,7 +342,13 @@ class AuthorPositionChart {
       normalCanvas.style.display = 'block' // Show the normal canvas
 
       // If needed, update the normal chart instance
-      this.myChart.update()
+      this.myChartAuthorship.update()
+    }
+  }
+
+  destroy () {
+    if (this.myChartAuthorship) {
+      this.myChartAuthorship.destroy()
     }
   }
 }

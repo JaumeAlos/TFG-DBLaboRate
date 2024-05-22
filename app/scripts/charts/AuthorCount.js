@@ -26,7 +26,7 @@ class AuthorCount {
       this.numberOfAuthorsParameter = numberOfAuthorsParameter
 
       const yearCounts = this.countPublicationsByAuthorCount(this.publications, numberOfAuthorsParameter, this.filters)
-      await this.createChart(yearCounts, numberOfAuthorsParameter)
+      await this.createChartAuthorCount(yearCounts, numberOfAuthorsParameter)
     } catch (error) {
       console.error('An error occurred:', error)
     }
@@ -112,7 +112,7 @@ class AuthorCount {
     })
 
     const categorizedAuthorCount = this.countPublicationsByAuthorCount(this.publications || [], this.numberOfAuthorsParameter, filters)
-    this.createChart(categorizedAuthorCount, this.numberOfAuthorsParameter)
+    this.createChartAuthorCount(categorizedAuthorCount, this.numberOfAuthorsParameter)
   }
 
   prepareDataForExcel (authorCountCategories, activeFiltersString) {
@@ -143,7 +143,7 @@ class AuthorCount {
     xlsx.utils.book_append_sheet(workbook, worksheet, 'Number of Authors')
     xlsx.writeFile(workbook, 'number_of_Authors.xlsx')
   }
-  async createChart (authorCountCategories, numberOfAuthorsParameter) {
+  async createChartAuthorCount (authorCountCategories, numberOfAuthorsParameter) {
     const sortedYears = Object.keys({
       ...authorCountCategories.threeOrLessAuthors,
       ...authorCountCategories.moreThanThreeAuthors
@@ -193,7 +193,7 @@ class AuthorCount {
     }
 
     if (this.myChartAuthor) {
-      this.myChartAuthor.destroy()
+      this.destroy()
     }
 
     let normalCanvas = document.getElementById('myChartAuthor')
@@ -282,6 +282,12 @@ class AuthorCount {
 
       // If needed, update the normal chart instance
       this.myChartAuthor.update()
+    }
+  }
+
+  destroy () {
+    if (this.myChartAuthor) {
+      this.myChartAuthor.destroy()
     }
   }
 }

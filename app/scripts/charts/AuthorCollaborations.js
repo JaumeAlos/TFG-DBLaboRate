@@ -238,7 +238,7 @@ class AuthorCollaborations {
     xlsx.writeFile(workbook, 'All_Charts.xlsx')
   }
 
-  handleFileSelect (event) {
+  async handleFileSelect (event) {
     const file = event.target.files[0]
     // eslint-disable-next-line no-undef
     const reader = new FileReader()
@@ -246,31 +246,101 @@ class AuthorCollaborations {
       const data = new Uint8Array(e.target.result)
       const workbook = xlsx.read(data, {type: 'array'})
 
-      // Suponiendo que los datos de cada gráfico están en hojas separadas
       const sheetNames = workbook.SheetNames
 
-      // Leer los datos de cada hoja y crear los gráficos correspondientes
       for (const sheetName of sheetNames) {
         const worksheet = workbook.Sheets[sheetName]
         const jsonData = xlsx.utils.sheet_to_json(worksheet, {header: 1})
 
-        // Crear los gráficos correspondientes dependiendo del nombre de la hoja
         switch (sheetName) {
           case 'Author Count':
-            const authorCountData = jsonData.slice(1) // Ignorar la fila de encabezado
-            await this.authorCountInstance.createChart(authorCountData)
+            const authorCountData = jsonData.slice(1)
+            let data = []
+            for (let i = 0; i < authorCountData.length; i++) {
+              if (authorCountData[i].length > 0) {
+                let dataPoint = {
+                  year: authorCountData[i][0],
+                  threeOrLessAuthors: authorCountData[i][1],
+                  moreThanThreeAuthors: authorCountData[i][2]
+                }
+                data.push(dataPoint)
+              }
+            }
+            if (this.authorCountInstance) {
+              await new Promise(resolve => {
+                this.authorCountInstance.destroy()
+                resolve()
+              })
+            }
+            console.log('Author Count Data:', data)
+            await this.authorCountInstance.createChartAuthorCount(data, this.numberOfAuthorsParameter)
             break
           case 'Author Position':
-            const authorPositionData = jsonData.slice(1) // Ignorar la fila de encabezado
-            await this.authorPositionChartInstance.createChart(authorPositionData)
+            const authorPositionData = jsonData.slice(1)
+            let dataPosition = []
+            for (let i = 0; i < authorPositionData.length; i++) {
+              if (authorPositionData[i].length > 0) {
+                let dataPoint = {
+                  year: authorPositionData[i][0],
+                  firstAuthor: authorPositionData[i][1],
+                  secondAuthor: authorPositionData[i][2],
+                  moreThanThirdAuthor: authorPositionData[i][3],
+                  lastAuthor: authorPositionData[i][4]
+                }
+                dataPosition.push(dataPoint)
+              }
+            }
+            if (this.authorPositionChartInstance) {
+              await new Promise(resolve => {
+                this.authorPositionChartInstance.destroy()
+                resolve()
+              })
+            }
+            console.log('Author Position Data:', dataPosition)
+            await this.authorPositionChartInstance.createChart(dataPosition)
             break
           case 'Collaborators':
-            const collaboratorsData = jsonData.slice(1) // Ignorar la fila de encabezado
-            await this.createCollaboratorChart(collaboratorsData)
+            const collaboratorsData = jsonData.slice(1)
+            let dataCollaborators = []
+            for (let i = 0; i < collaboratorsData.length; i++) {
+              if (collaboratorsData[i].length > 0) {
+                let dataPoint = {
+                  year: collaboratorsData[i][0],
+                  collaborators: collaboratorsData[i][1]
+                }
+                dataCollaborators.push(dataPoint)
+              }
+            }
+            if (this.myChartCollaborator) {
+              await new Promise(resolve => {
+                this.myChartCollaborator.destroy()
+                resolve()
+              })
+            }
+            console.log('Collaborators Data:', dataCollaborators)
+            await this.createCollaboratorChart(dataCollaborators)
             break
           case 'Close Colleague & Acquaintances':
-            const acquaintancesData = jsonData.slice(1) // Ignorar la fila de encabezado
-            await this.createAcquaintanceChart(acquaintancesData)
+            const acquaintancesData = jsonData.slice(1)
+            let dataAcquaintances = []
+            for (let i = 0; i < acquaintancesData.length; i++) {
+              if (acquaintancesData[i].length > 0) {
+                let dataPoint = {
+                  year: acquaintancesData[i][0],
+                  closeColleagues: acquaintancesData[i][1],
+                  acquaintances: acquaintancesData[i][2]
+                }
+                dataAcquaintances.push(dataPoint)
+              }
+            }
+            if (this.myChartAcquaintance) {
+              await new Promise(resolve => {
+                this.myChartAcquaintance.destroy()
+                resolve()
+              })
+            }
+            console.log('Close Colleague & Acquaintances Data:', dataAcquaintances)
+            await this.createAcquaintanceChart(dataAcquaintances)
             break
           default:
             console.error(`No se reconoce el nombre de la hoja: ${sheetName}`)
