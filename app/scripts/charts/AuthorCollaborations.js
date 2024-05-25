@@ -46,6 +46,7 @@ class AuthorCollaborations {
       this.lastAuthorshipPosition = lastAuthorshipPosition
 
       const categorizedCoAuthors = this.countCoAuthors(this.publications || [], this.specificAuthor, this.filters)
+      console.log('Categorized Co-Authors:', categorizedCoAuthors)
       await this.createAcquaintanceChart(categorizedCoAuthors)
       await this.createCollaboratorChart(categorizedCoAuthors)
     } catch (error) {
@@ -254,16 +255,16 @@ class AuthorCollaborations {
 
         switch (sheetName) {
           case 'Author Count':
-            const authorCountData = jsonData.slice(1)
-            let data = []
+            const authorCountData = jsonData.slice(2)
+            let dataCount = {
+              threeOrLessAuthors: {},
+              moreThanThreeAuthors: {}
+            }
             for (let i = 0; i < authorCountData.length; i++) {
               if (authorCountData[i].length > 0) {
-                let dataPoint = {
-                  year: authorCountData[i][0],
-                  threeOrLessAuthors: authorCountData[i][1],
-                  moreThanThreeAuthors: authorCountData[i][2]
-                }
-                data.push(dataPoint)
+                let year = authorCountData[i][0]
+                dataCount.threeOrLessAuthors[year] = authorCountData[i][1]
+                dataCount.moreThanThreeAuthors[year] = authorCountData[i][2] || 0
               }
             }
             if (this.authorCountInstance) {
@@ -272,22 +273,23 @@ class AuthorCollaborations {
                 resolve()
               })
             }
-            console.log('Author Count Data:', data)
-            await this.authorCountInstance.createChartAuthorCount(data, this.numberOfAuthorsParameter)
+            await this.authorCountInstance.createChartAuthorCount(dataCount, this.numberOfAuthorsParameter)
             break
           case 'Author Position':
-            const authorPositionData = jsonData.slice(1)
-            let dataPosition = []
+            const authorPositionData = jsonData.slice(2)
+            let dataPosition = {
+              firstAuthor: {},
+              secondAuthor: {},
+              moreThanThirdAuthor: {},
+              lastAuthor: {}
+            }
             for (let i = 0; i < authorPositionData.length; i++) {
               if (authorPositionData[i].length > 0) {
-                let dataPoint = {
-                  year: authorPositionData[i][0],
-                  firstAuthor: authorPositionData[i][1],
-                  secondAuthor: authorPositionData[i][2],
-                  moreThanThirdAuthor: authorPositionData[i][3],
-                  lastAuthor: authorPositionData[i][4]
-                }
-                dataPosition.push(dataPoint)
+                let year = authorPositionData[i][0]
+                dataPosition.firstAuthor[year] = authorPositionData[i][1]
+                dataPosition.secondAuthor[year] = authorPositionData[i][2]
+                dataPosition.moreThanThirdAuthor[year] = authorPositionData[i][3]
+                dataPosition.lastAuthor[year] = authorPositionData[i][4]
               }
             }
             if (this.authorPositionChartInstance) {
@@ -296,19 +298,17 @@ class AuthorCollaborations {
                 resolve()
               })
             }
-            console.log('Author Position Data:', dataPosition)
             await this.authorPositionChartInstance.createChart(dataPosition)
             break
           case 'Collaborators':
-            const collaboratorsData = jsonData.slice(1)
-            let dataCollaborators = []
+            const collaboratorsData = jsonData.slice(2)
+            let dataCollaborators = {}
             for (let i = 0; i < collaboratorsData.length; i++) {
               if (collaboratorsData[i].length > 0) {
-                let dataPoint = {
-                  year: collaboratorsData[i][0],
-                  collaborators: collaboratorsData[i][1]
+                let year = collaboratorsData[i][0]
+                dataCollaborators[year] = {
+                  collaborator: collaboratorsData[i][1]
                 }
-                dataCollaborators.push(dataPoint)
               }
             }
             if (this.myChartCollaborator) {
@@ -317,20 +317,18 @@ class AuthorCollaborations {
                 resolve()
               })
             }
-            console.log('Collaborators Data:', dataCollaborators)
             await this.createCollaboratorChart(dataCollaborators)
             break
           case 'Close Colleague & Acquaintances':
-            const acquaintancesData = jsonData.slice(1)
-            let dataAcquaintances = []
+            const acquaintancesData = jsonData.slice(2)
+            let dataAcquaintances = {}
             for (let i = 0; i < acquaintancesData.length; i++) {
               if (acquaintancesData[i].length > 0) {
-                let dataPoint = {
-                  year: acquaintancesData[i][0],
-                  closeColleagues: acquaintancesData[i][1],
-                  acquaintances: acquaintancesData[i][2]
+                let year = acquaintancesData[i][0]
+                dataAcquaintances[year] = {
+                  closeColleague: acquaintancesData[i][1],
+                  acquaintance: acquaintancesData[i][2]
                 }
-                dataAcquaintances.push(dataPoint)
               }
             }
             if (this.myChartAcquaintance) {
@@ -339,7 +337,6 @@ class AuthorCollaborations {
                 resolve()
               })
             }
-            console.log('Close Colleague & Acquaintances Data:', dataAcquaintances)
             await this.createAcquaintanceChart(dataAcquaintances)
             break
           default:

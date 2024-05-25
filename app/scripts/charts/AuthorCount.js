@@ -1,5 +1,4 @@
 import Chart from 'chart.js/auto'
-import * as xlsx from 'xlsx'
 
 class AuthorCount {
   constructor () {
@@ -136,19 +135,11 @@ class AuthorCount {
     return data
   }
 
-  exportToExcel (authorCountCategories, activeFiltersString) {
-    const data = this.prepareDataForExcel(authorCountCategories, activeFiltersString)
-    const worksheet = xlsx.utils.json_to_sheet(data)
-    const workbook = xlsx.utils.book_new()
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'Number of Authors')
-    xlsx.writeFile(workbook, 'number_of_Authors.xlsx')
-  }
   async createChartAuthorCount (authorCountCategories, numberOfAuthorsParameter) {
     const sortedYears = Object.keys({
       ...authorCountCategories.threeOrLessAuthors,
       ...authorCountCategories.moreThanThreeAuthors
     }).sort((a, b) => a - b)
-
     const datasets = [
       {
         label: numberOfAuthorsParameter + ' or Fewer Authors',

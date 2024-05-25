@@ -1,5 +1,4 @@
 import Chart from 'chart.js/auto'
-import * as xlsx from 'xlsx'
 
 class AuthorPositionChart {
   constructor () {
@@ -177,14 +176,6 @@ class AuthorPositionChart {
     return data
   }
 
-  exportToExcel (authorPositionCounts, activeFiltersString) {
-    const data = this.prepareDataForExcel(authorPositionCounts, activeFiltersString, this.lastAuthorshipPosition)
-    const worksheet = xlsx.utils.json_to_sheet(data)
-    const workbook = xlsx.utils.book_new()
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'Authorship Position')
-    xlsx.writeFile(workbook, 'authorship_position.xlsx')
-  }
-
   // Function to create and save the chart
   async createChart (authorPositionCounts) {
     const sortedYears = Object.keys({
@@ -213,7 +204,7 @@ class AuthorPositionChart {
       }
     ]
 
-    if (this.lastAuthorshipPosition) {
+    if (this.lastAuthorshipPosition || authorPositionCounts.lastAuthor.value > 0) {
       datasets.push({
         label: 'Last Author',
         data: Object.values(authorPositionCounts.lastAuthor),
