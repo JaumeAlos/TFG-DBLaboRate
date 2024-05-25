@@ -46,7 +46,6 @@ class AuthorCollaborations {
       this.lastAuthorshipPosition = lastAuthorshipPosition
 
       const categorizedCoAuthors = this.countCoAuthors(this.publications || [], this.specificAuthor, this.filters)
-      console.log('Categorized Co-Authors:', categorizedCoAuthors)
       await this.createAcquaintanceChart(categorizedCoAuthors)
       await this.createCollaboratorChart(categorizedCoAuthors)
     } catch (error) {
