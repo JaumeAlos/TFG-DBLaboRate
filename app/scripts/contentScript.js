@@ -73,11 +73,8 @@ const loadPage = function () {
                   window.dblpExtension.authorPositionChart = new AuthorPositionChart()
                   window.dblpExtension.authorPositionChart.init(xmlDoc, lastAuthorshipPosition)
 
-                  const authorCountInstance = new AuthorCount()
-                  const authorPositionChartInstance = new AuthorPositionChart()
-
                   window.dblpExtension.authorCollaborations = new AuthorCollaborations()
-                  window.dblpExtension.authorCollaborations.init(xmlDoc, closeColleagueParameter, closeColleagueYearParameter, acquaintanceParameter, acquaintanceYearParameter, authorCountInstance, authorPositionChartInstance, numberOfAuthorsParameter, lastAuthorshipPosition)
+                  window.dblpExtension.authorCollaborations.init(xmlDoc, closeColleagueParameter, closeColleagueYearParameter, acquaintanceParameter, acquaintanceYearParameter, window.dblpExtension.authorCount, window.dblpExtension.authorPositionChart, numberOfAuthorsParameter, lastAuthorshipPosition)
                 })
               })
             })

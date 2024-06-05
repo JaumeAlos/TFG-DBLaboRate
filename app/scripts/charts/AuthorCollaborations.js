@@ -214,49 +214,136 @@ class AuthorCollaborations {
     return data
   }
 
-  async exportToExcelCollaborators (categorizedCoAuthors, filterName) {
-    const data = this.prepareDataForExcelCollaborators(categorizedCoAuthors, filterName)
-    const worksheet = xlsx.utils.json_to_sheet(data)
-    const workbook = xlsx.utils.book_new()
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'CoAuthor Categories')
-    xlsx.writeFile(workbook, 'Collaborators.xlsx')
-  }
-
-  async exportToExcelAcquaintances (categorizedCoAuthors, filterName) {
-    const data = this.prepareDataForExcelAcquaintances(categorizedCoAuthors, filterName)
-    const worksheet = xlsx.utils.json_to_sheet(data)
-    const workbook = xlsx.utils.book_new()
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'CoAuthor Categories')
-    xlsx.writeFile(workbook, 'Close_Colleagues_&_Acquaintances.xlsx')
-  }
-
   exportAllToExcel (categorizedCoAuthors, activeFiltersString) {
     const workbook = xlsx.utils.book_new()
 
-    // Datos de la gráfica de colaboradores
     const collaboratorsData = this.prepareDataForExcelCollaborators(categorizedCoAuthors, activeFiltersString)
     const collaboratorsWorksheet = xlsx.utils.json_to_sheet(collaboratorsData)
     xlsx.utils.book_append_sheet(workbook, collaboratorsWorksheet, 'Collaborators')
 
-    // Datos de la gráfica de conocidos
     const acquaintancesData = this.prepareDataForExcelAcquaintances(categorizedCoAuthors, activeFiltersString)
     const acquaintancesWorksheet = xlsx.utils.json_to_sheet(acquaintancesData)
-    xlsx.utils.book_append_sheet(workbook, acquaintancesWorksheet, 'Acquaintances')
+    xlsx.utils.book_append_sheet(workbook, acquaintancesWorksheet, 'Close Colleague & Acquaintances')
 
-    // Datos de AuthorCount
     const authorCountCategories = this.authorCountInstance.countPublicationsByAuthorCount(this.publications, this.numberOfAuthorsParameter, this.filters)
     const authorCountData = this.authorCountInstance.prepareDataForExcel(authorCountCategories, activeFiltersString)
     const authorCountWorksheet = xlsx.utils.json_to_sheet(authorCountData)
     xlsx.utils.book_append_sheet(workbook, authorCountWorksheet, 'Author Count')
 
-    // Datos de AuthorPositionChart
     const authorPositionCounts = this.authorPositionChartInstance.countPublicationsByAuthorPosition(this.publications, this.specificAuthor, this.filters, this.lastAuthorshipPosition)
     const authorPositionChartData = this.authorPositionChartInstance.prepareDataForExcel(authorPositionCounts, activeFiltersString, this.lastAuthorshipPosition)
     const authorPositionChartWorksheet = xlsx.utils.json_to_sheet(authorPositionChartData)
     xlsx.utils.book_append_sheet(workbook, authorPositionChartWorksheet, 'Author Position')
 
-    // Guardar el archivo Excel
     xlsx.writeFile(workbook, 'All_Charts.xlsx')
+  }
+
+  async handleFileSelect (event) {
+    const file = event.target.files[0]
+    // eslint-disable-next-line no-undef
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const data = new Uint8Array(e.target.result)
+      const workbook = xlsx.read(data, {type: 'array'})
+
+      const sheetNames = workbook.SheetNames
+
+      for (const sheetName of sheetNames) {
+        const worksheet = workbook.Sheets[sheetName]
+        const jsonData = xlsx.utils.sheet_to_json(worksheet, {header: 1})
+
+        switch (sheetName) {
+          case 'Author Count':
+            const authorCountData = jsonData.slice(2)
+            let dataCount = {
+              threeOrLessAuthors: {},
+              moreThanThreeAuthors: {}
+            }
+            for (let i = 0; i < authorCountData.length; i++) {
+              if (authorCountData[i].length > 0) {
+                let year = authorCountData[i][0]
+                dataCount.threeOrLessAuthors[year] = authorCountData[i][1]
+                dataCount.moreThanThreeAuthors[year] = authorCountData[i][2] || 0
+              }
+            }
+            if (this.authorCountInstance) {
+              await new Promise(resolve => {
+                this.authorCountInstance.destroy()
+                resolve()
+              })
+            }
+            await this.authorCountInstance.createChartAuthorCount(dataCount, this.numberOfAuthorsParameter)
+            break
+          case 'Author Position':
+            const authorPositionData = jsonData.slice(2)
+            let dataPosition = {
+              firstAuthor: {},
+              secondAuthor: {},
+              moreThanThirdAuthor: {},
+              lastAuthor: {}
+            }
+            for (let i = 0; i < authorPositionData.length; i++) {
+              if (authorPositionData[i].length > 0) {
+                let year = authorPositionData[i][0]
+                dataPosition.firstAuthor[year] = authorPositionData[i][1]
+                dataPosition.secondAuthor[year] = authorPositionData[i][2]
+                dataPosition.moreThanThirdAuthor[year] = authorPositionData[i][3]
+                dataPosition.lastAuthor[year] = authorPositionData[i][4]
+              }
+            }
+            if (this.authorPositionChartInstance) {
+              await new Promise(resolve => {
+                this.authorPositionChartInstance.destroy()
+                resolve()
+              })
+            }
+            await this.authorPositionChartInstance.createChart(dataPosition)
+            break
+          case 'Collaborators':
+            const collaboratorsData = jsonData.slice(2)
+            let dataCollaborators = {}
+            for (let i = 0; i < collaboratorsData.length; i++) {
+              if (collaboratorsData[i].length > 0) {
+                let year = collaboratorsData[i][0]
+                dataCollaborators[year] = {
+                  collaborator: collaboratorsData[i][1]
+                }
+              }
+            }
+            if (this.myChartCollaborator) {
+              await new Promise(resolve => {
+                this.myChartCollaborator.destroy()
+                resolve()
+              })
+            }
+            await this.createCollaboratorChart(dataCollaborators)
+            break
+          case 'Close Colleague & Acquaintances':
+            const acquaintancesData = jsonData.slice(2)
+            let dataAcquaintances = {}
+            for (let i = 0; i < acquaintancesData.length; i++) {
+              if (acquaintancesData[i].length > 0) {
+                let year = acquaintancesData[i][0]
+                dataAcquaintances[year] = {
+                  closeColleague: acquaintancesData[i][1],
+                  acquaintance: acquaintancesData[i][2]
+                }
+              }
+            }
+            if (this.myChartAcquaintance) {
+              await new Promise(resolve => {
+                this.myChartAcquaintance.destroy()
+                resolve()
+              })
+            }
+            await this.createAcquaintanceChart(dataAcquaintances)
+            break
+          default:
+            console.error(`No se reconoce el nombre de la hoja: ${sheetName}`)
+        }
+      }
+    }
+    reader.readAsArrayBuffer(file)
   }
 
   // Function to create and save the chart
@@ -410,6 +497,26 @@ class AuthorCollaborations {
     normalCanvas.addEventListener('click', () => {
       this.toggleChartModal(normalCanvas, largeCanvas, categorizedCoAuthors, true)
     })
+
+    const fileInput = document.createElement('input')
+    fileInput.type = 'file'
+    fileInput.accept = '.xlsx'
+    fileInput.style.display = 'none'
+    fileInput.addEventListener('change', (event) => this.handleFileSelect(event))
+
+    const importButton = document.createElement('button')
+    importButton.textContent = 'Import from Excel'
+    importButton.id = 'import-button'
+    importButton.style.margin = '10px'
+    importButton.addEventListener('click', () => fileInput.click())
+
+    const previousImport = document.getElementById('import-button')
+    if (previousImport) {
+      previousImport.remove()
+    }
+
+    div.appendChild(fileInput)
+    div.prepend(importButton)
 
     const previousTitle = document.getElementById('collaborators-title')
     if (previousTitle) {

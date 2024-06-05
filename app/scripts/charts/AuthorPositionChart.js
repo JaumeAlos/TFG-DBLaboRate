@@ -1,9 +1,8 @@
 import Chart from 'chart.js/auto'
-import * as xlsx from 'xlsx'
 
 class AuthorPositionChart {
   constructor () {
-    this.myChart = null
+    this.myChartAuthorship = null
     this.myLargeChart = null
     this.publications = null
     this.specificAuthor = null
@@ -177,14 +176,6 @@ class AuthorPositionChart {
     return data
   }
 
-  exportToExcel (authorPositionCounts, activeFiltersString) {
-    const data = this.prepareDataForExcel(authorPositionCounts, activeFiltersString, this.lastAuthorshipPosition)
-    const worksheet = xlsx.utils.json_to_sheet(data)
-    const workbook = xlsx.utils.book_new()
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'Authorship Position')
-    xlsx.writeFile(workbook, 'authorship_position.xlsx')
-  }
-
   // Function to create and save the chart
   async createChart (authorPositionCounts) {
     const sortedYears = Object.keys({
@@ -213,7 +204,7 @@ class AuthorPositionChart {
       }
     ]
 
-    if (this.lastAuthorshipPosition) {
+    if (this.lastAuthorshipPosition || authorPositionCounts.lastAuthor.value > 0) {
       datasets.push({
         label: 'Last Author',
         data: Object.values(authorPositionCounts.lastAuthor),
@@ -267,7 +258,9 @@ class AuthorPositionChart {
       largeCanvas.height = 700
     } else {
       const normalCtx = normalCanvas.getContext('2d')
-      this.myChart.destroy()
+      if (this.myChartAuthorship) {
+        this.destroy()
+      }
       normalCtx.clearRect(0, 0, normalCanvas.width, normalCanvas.height)
     }
 
@@ -292,7 +285,7 @@ class AuthorPositionChart {
 
     // Get the context of the normal canvas and create the chart
     const normalCtx = normalCanvas.getContext('2d')
-    this.myChart = new Chart(normalCtx, this.configuration)
+    this.myChartAuthorship = new Chart(normalCtx, this.configuration)
   }
 
   toggleChartModal (normalCanvas, largeCanvas, authorPositionCounts, enlarge) {
@@ -340,7 +333,13 @@ class AuthorPositionChart {
       normalCanvas.style.display = 'block' // Show the normal canvas
 
       // If needed, update the normal chart instance
-      this.myChart.update()
+      this.myChartAuthorship.update()
+    }
+  }
+
+  destroy () {
+    if (this.myChartAuthorship) {
+      this.myChartAuthorship.destroy()
     }
   }
 }
