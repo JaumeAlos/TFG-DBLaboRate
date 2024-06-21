@@ -12,7 +12,8 @@ class AuthorCollaborations {
     this.myLargeChartCollaborator = null
     this.myChartAcquaintance = null
     this.myLargeChartAcquaintance = null
-    this.configuration = null
+    this.configurationCollaborator = null
+    this.configurationAcquaintance = null
     this.publications = null
     this.specificAuthor = null
     this.closeColleagueParameter = 0
@@ -217,14 +218,6 @@ class AuthorCollaborations {
   exportAllToExcel (categorizedCoAuthors, activeFiltersString) {
     const workbook = xlsx.utils.book_new()
 
-    const collaboratorsData = this.prepareDataForExcelCollaborators(categorizedCoAuthors, activeFiltersString)
-    const collaboratorsWorksheet = xlsx.utils.json_to_sheet(collaboratorsData)
-    xlsx.utils.book_append_sheet(workbook, collaboratorsWorksheet, 'Collaborators')
-
-    const acquaintancesData = this.prepareDataForExcelAcquaintances(categorizedCoAuthors, activeFiltersString)
-    const acquaintancesWorksheet = xlsx.utils.json_to_sheet(acquaintancesData)
-    xlsx.utils.book_append_sheet(workbook, acquaintancesWorksheet, 'Close Colleague & Acquaintances')
-
     const authorCountCategories = this.authorCountInstance.countPublicationsByAuthorCount(this.publications, this.numberOfAuthorsParameter, this.filters)
     const authorCountData = this.authorCountInstance.prepareDataForExcel(authorCountCategories, activeFiltersString)
     const authorCountWorksheet = xlsx.utils.json_to_sheet(authorCountData)
@@ -234,6 +227,14 @@ class AuthorCollaborations {
     const authorPositionChartData = this.authorPositionChartInstance.prepareDataForExcel(authorPositionCounts, activeFiltersString, this.lastAuthorshipPosition)
     const authorPositionChartWorksheet = xlsx.utils.json_to_sheet(authorPositionChartData)
     xlsx.utils.book_append_sheet(workbook, authorPositionChartWorksheet, 'Author Position')
+
+    const acquaintancesData = this.prepareDataForExcelAcquaintances(categorizedCoAuthors, activeFiltersString)
+    const acquaintancesWorksheet = xlsx.utils.json_to_sheet(acquaintancesData)
+    xlsx.utils.book_append_sheet(workbook, acquaintancesWorksheet, 'Close Colleague & Acquaintances')
+
+    const collaboratorsData = this.prepareDataForExcelCollaborators(categorizedCoAuthors, activeFiltersString)
+    const collaboratorsWorksheet = xlsx.utils.json_to_sheet(collaboratorsData)
+    xlsx.utils.book_append_sheet(workbook, collaboratorsWorksheet, 'Collaborators')
 
     xlsx.writeFile(workbook, 'All_Charts.xlsx')
   }
@@ -365,7 +366,7 @@ class AuthorCollaborations {
       }
     ]
 
-    this.configuration = {
+    this.configurationAcquaintance = {
       type: 'bar',
       data: {
         labels: sortedYears,
@@ -415,7 +416,7 @@ class AuthorCollaborations {
     }
 
     normalCanvas.addEventListener('click', () => {
-      this.toggleChartModal(normalCanvas, largeCanvas, categorizedCoAuthors, true)
+      this.toggleChartModalCloseColleagues(normalCanvas, largeCanvas, categorizedCoAuthors, true)
     })
 
     const previousTitle = document.getElementById('acquaintance-title')
@@ -432,7 +433,7 @@ class AuthorCollaborations {
     div.insertBefore(title, normalCanvas)
 
     const normalCtx = normalCanvas.getContext('2d')
-    this.myChartAcquaintance = new Chart(normalCtx, this.configuration)
+    this.myChartAcquaintance = new Chart(normalCtx, this.configurationAcquaintance)
   }
 
   async createCollaboratorChart (categorizedCoAuthors) {
@@ -445,7 +446,7 @@ class AuthorCollaborations {
       stack: 'stacked'
     }]
 
-    this.configuration = {
+    this.configurationCollaborator = {
       type: 'bar',
       data: {
         labels: sortedYears,
@@ -495,7 +496,7 @@ class AuthorCollaborations {
     }
 
     normalCanvas.addEventListener('click', () => {
-      this.toggleChartModal(normalCanvas, largeCanvas, categorizedCoAuthors, true)
+      this.toggleChartModalCollaborator(normalCanvas, largeCanvas, categorizedCoAuthors, true)
     })
 
     const fileInput = document.createElement('input')
@@ -563,10 +564,10 @@ class AuthorCollaborations {
     div.insertBefore(exportButton, normalCanvas.nextSibling)
 
     const normalCtx = normalCanvas.getContext('2d')
-    this.myChartCollaborator = new Chart(normalCtx, this.configuration)
+    this.myChartCollaborator = new Chart(normalCtx, this.configurationCollaborator)
   }
 
-  toggleChartModal (normalCanvas, largeCanvas, categorizedCoAuthors, enlarge) {
+  toggleChartModalCollaborator (normalCanvas, largeCanvas, categorizedCoAuthors, enlarge) {
     let backdrop = document.querySelector('.modal-backdrop')
     if (!backdrop) {
       backdrop = document.createElement('div')
@@ -586,7 +587,7 @@ class AuthorCollaborations {
       // Get the context of the large canvas
       const largeCtx = largeCanvas.getContext('2d')
       // Clone the chart configuration and adjust as needed for the larger size
-      let largeConfiguration = JSON.parse(JSON.stringify(this.configuration))
+      let largeConfiguration = JSON.parse(JSON.stringify(this.configurationCollaborator))
       largeConfiguration.options.maintainAspectRatio = false
       // Adjust other configuration options as needed
       largeConfiguration.options.scales.x.ticks.autoSkip = false
@@ -599,7 +600,56 @@ class AuthorCollaborations {
       normalCanvas.style.display = 'none' // Hide the normal canvas
 
       backdrop.onclick = () => {
-        this.toggleChartModal(normalCanvas, largeCanvas, categorizedCoAuthors, false)
+        this.toggleChartModalCollaborator(normalCanvas, largeCanvas, categorizedCoAuthors, false)
+      }
+    } else {
+      // Remove modal-specific styles
+      largeCanvas.classList.remove('modal-canvas', 'modal-view')
+
+      // Move the normal canvas back into the main page and hide the modal
+      backdrop.removeChild(largeCanvas)
+      backdrop.style.display = 'none'
+      normalCanvas.style.display = 'block' // Show the normal canvas
+
+      // If needed, update the normal chart instance
+      this.myChartCollaborator.update()
+    }
+  }
+
+  toggleChartModalCloseColleagues (normalCanvas, largeCanvas, categorizedCoAuthors, enlarge) {
+    let backdrop = document.querySelector('.modal-backdrop')
+    if (!backdrop) {
+      backdrop = document.createElement('div')
+      backdrop.classList.add('modal-backdrop')
+      backdrop.style.display = 'none' // Initially hidden
+      document.body.appendChild(backdrop)
+    }
+
+    if (enlarge) {
+      // Apply modal-specific styles
+      largeCanvas.classList.add('modal-canvas', 'modal-view')
+
+      // Always remove the old chart and create a new one for consistency
+      if (this.myLargeChartAcquaintance) {
+        this.myLargeChartAcquaintance.destroy() // Destroy the old chart instance
+      }
+      // Get the context of the large canvas
+      const largeCtx = largeCanvas.getContext('2d')
+      // Clone the chart configuration and adjust as needed for the larger size
+      let largeConfiguration = JSON.parse(JSON.stringify(this.configurationAcquaintance))
+      largeConfiguration.options.maintainAspectRatio = false
+      // Adjust other configuration options as needed
+      largeConfiguration.options.scales.x.ticks.autoSkip = false
+      largeConfiguration.options.scales.x.ticks.maxRotation = 90
+
+      this.myLargeChartAcquaintance = new Chart(largeCtx, largeConfiguration) // Create a new chart instance
+
+      backdrop.appendChild(largeCanvas)
+      backdrop.style.display = 'flex'
+      normalCanvas.style.display = 'none' // Hide the normal canvas
+
+      backdrop.onclick = () => {
+        this.toggleChartModalCloseColleagues(normalCanvas, largeCanvas, categorizedCoAuthors, false)
       }
     } else {
       // Remove modal-specific styles
