@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" type="text/css" href="../styles/options.css">
+
+  <title>DBLaboRate configuration</title>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <header></header>
+
+  <!-- Container -->
+  <div id="main-container" class="container">
+
+    <div class="jumbotron">
+      </br></br>
+      <h2 class="title">DBLaboRate configuration</h2>
+      <!--div class="card">
+        <div class="card-header card-header bg-dark text-white">User manual</div>
+        <div class="card-body">
+          <div class="form-group">
+            Visit whenever you want the <a href="https://github.com/haritzmedina/reviewandgo/wiki" target="_blank">user manual</a> for further information or checkout the <a href="https://www.youtube.com/watch?v=iPC6YEr3qlo">video</a>.
+          </div>
+        </div>
+      </div-->
+      <div class="card">
+        <div class="card-header card-header bg-dark text-white">Number of Authors Chart Configuration</div>
+        <div class="card-body">
+          <div class="form-check">
+            <label for="numberOfAuthorsParameterInput">What is the number of authors threshold=</label>
+            <input type="number" id="numberOfAuthorsParameterInput" min="2" max="10">
+            <button id="numberOfAuthorsParameterButton" >Save</button>
+            <label id="numberOfAuthorsParameterMessage"></label>
+          </div>
+          <br>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header card-header bg-dark text-white">Last Author Configuration</div>
+        <div class="card-body">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="authorshipPositionToggle">
+            <label class="form-check-label" for="authorshipPositionToggle">
+              Show last author
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header card-header bg-dark text-white">CoAuthor categories Chart Configuration</div>
+        <div class="card-body">
+          <div class="form-check">
+            <label for="closeColleagueParameterInput">Minimum number of years a co-author have at least one joint publication to be considered a close colleague:</label>
+            <input type="number" id="closeColleagueParameterInput" min="2" max="10">
+            <button id="closeColleagueParameterButton" >Save</button>
+            <label id="closeColleagueParameterMessage"></label>
+          </div>
+          <br>
+          <div class="form-check">
+            <label for="closeColleagueYearsInput">Maximum interval in years that the co-author must publish to be considered a close colleague: </label>
+            <input type="number" id="closeColleagueYearsInput" min="2" max="10">
+            <button id="closeColleagueYearsButton">Save</button>
+            <label id="closeColleagueYearsMessage"></label>
+          </div>
+          <br>
+        </div>
+
+        <div class="card-body">
+        <div class="form-check">
+            <label for="acquaintanceParameterInput">Minimum number of years a co-author have at least one joint to be considered an acquaintance:</label>
+            <input type="number" id="acquaintanceParameterInput" min="2" max="10">
+            <button id="acquaintanceParameterButton">Save</button>
+            <label id="acquaintanceParameterMessage"></label>
+          </div>
+          <br>
+          <div class="form-check">
+            <label for="acquaintanceYearsInput">Maximum interval in years that a co-author must publish to be considered an acquaintance:</label>
+            <input type="number" id="acquaintanceYearsInput" min="2" max="10">
+            <button id="acquaintanceYearsButton">Save</button>
+            <label id="acquaintanceYearsMessage"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../scripts/options.js"></script>
+</body>
+</html>
